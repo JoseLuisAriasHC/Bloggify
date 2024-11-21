@@ -1,17 +1,12 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import dotenv from 'dotenv';
+// Routes
+import userRoutes from './routes/user.routes';
 
-// Cargar las variables de entorno
 dotenv.config();
 
-// Crear una instancia de PrismaClient
-const prisma = new PrismaClient();
-
-// Crear una aplicación de Express
 const app = express();
 
-// Middleware para parsear JSON en las peticiones
 app.use(express.json());
 
 // Ruta principal
@@ -19,8 +14,12 @@ app.get('/', (req: Request, res: Response) => {
   res.send('¡Hola, Mundo desde Node.js y Prisma!');
 });
 
+// Usa las rutas definidas
+app.use('/users', userRoutes);
+
 // Iniciar el servidor
-const PORT: number = parseInt(process.env.PORT || '3000', 10);
+const HOST : string = process.env.HOST || 'http://localhost';
+const PORT: number = parseInt(process.env.PORT || '3000');
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en ${HOST}:${PORT}`);
 });

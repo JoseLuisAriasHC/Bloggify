@@ -20,10 +20,12 @@ model User {
   email     String   @unique
   password  String
   icon      String
+  biography String
   posts         Post[]
   comments      Comment[]
   favorites     Favorites[]
   notifications Notification[]
+  views         PostView[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -31,7 +33,9 @@ model User {
 model Post {
   id          Int          @id @default(autoincrement())
   title       String
-  content     String
+  content     Json
+  summary     String
+  imageUrl    String
   slug        String        @unique
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
@@ -40,7 +44,6 @@ model Post {
   comments    Comment[]
   favorites   Favorites[]
   tags        PostTag[]
-  media       Media[]
   views       PostView[]
 }
 
@@ -63,15 +66,6 @@ model PostView {
   user        User    @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-}
-
-model Media {
-  id          Int      @id @default(autoincrement())
-  url         String
-  type        String
-  postId      Int
-  post        Post     @relation(fields: [postId], references: [id])
-  createdAt   DateTime @default(now())
 }
 
 model Tag {
@@ -99,4 +93,14 @@ model Favorites {
   user        User     @relation(fields: [userId], references: [id])
   createdAt   DateTime @default(now())
   @@unique([postId, userId])
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  type        String   
+  message     String
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
