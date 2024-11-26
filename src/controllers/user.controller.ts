@@ -1,57 +1,29 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { UserService } from "../services/user.service";
 
-const prisma = new PrismaClient();
-
-export const UserController = {
-  async getAllUsers(req: Request, res: Response) {
-    try {
-      const users = await prisma.user.findMany();
-      res.json(users);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al obtener usuarios" });
+export const getUserById = async (req: Request, res: Response) => {
+  try {
+    // verificar si hay id
+    if (!req.params.id) {
+      res.status(400).json({ message: "User ID is required" });
+      return;
     }
-  },
-
-  async getUserById(req: Request, res: Response) {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-      const user = await prisma.user.findUnique({
-        where: { id },
-      });
-      res.json(user);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al obtener usuario por ID" });
+    const id = parseInt(req.params.id);
+    // verificar que el id es Number
+    if (isNaN(id)) {
+      res.status(400).json({ message: "Invalid user ID" });
+      return;
     }
-  },
 
-  async createUser(req: Request, res: Response) {
-    try {
-      const user = await prisma.user.create(req.body);
-      res.status(201).json(user);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al crear usuario" });
+    const user = await UserService.getUserById(id);
+    // verificar que hay un usuario con ese ID
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
     }
-  },
-
-  async deleteUserById(req: Request, res: Response) {
-    try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
-        return res.status(400).json({ message: "Invalid user ID" });
-      }
-      prisma.user.delete({
-        where: {id}
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Error al borrar usuario" });
-    }
-  },
+    res.json(user);
+  } catch (error) {
+    console.error("Error al obtener usuario:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
