@@ -3,13 +3,13 @@ import dotenv from 'dotenv';
 // Routes
 import userRoutes from './routes/user.routes';
 
+
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
 
-// Ruta principal
 app.get('/', (req: Request, res: Response) => {
   res.send('¡Hola, Mundo desde Node.js y Prisma!');
 });
