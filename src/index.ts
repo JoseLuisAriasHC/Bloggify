@@ -20,7 +20,7 @@ app.use('/users', userRoutes);
 const HOST : string = process.env.HOST || 'http://localhost';
 const PORT: number = parseInt(process.env.PORT || '3000');
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en ${HOST}:${PORT}  ` + sumar(2,4));
+  console.log(`Servidor corriendo en ${HOST}:${PORT}`);
 });
 
 function sumar(number1:number, number2:number): number {
