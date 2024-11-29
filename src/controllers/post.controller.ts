@@ -5,12 +5,23 @@ export const createPost = async (req: Request, res: Response) => {
   try {
     const { title, content, summary, imageUrl, authorId } = req.body;
 
-    if (!title || !content || !summary || !imageUrl || !authorId) {
-      res.status(400).json({ message: "All fields are required" });
+    if (!title || title.trim() == "") {
+      res.status(400).json({ message: "Title cannot be empty" });
       return;
     }
-
-    if (!authorId || isNaN(authorId)) {
+    if (!content || typeof content !== "object" || Object.keys(content).length === 0) {
+      res.status(400).json({ message: "Content must be a non-empty JSON object or array" });
+      return;
+    }
+    if (!summary || summary.trim() == "") {
+      res.status(400).json({ message: "summary cannot be empty" });
+      return;
+    }
+    if (!imageUrl || imageUrl.trim() == "") {
+      res.status(400).json({ message: "imageUrl cannot be empty" });
+      return;
+    }
+    if (!authorId || typeof authorId !== "number" || isNaN(authorId)) {
       res.status(400).json({ message: "Author ID is invalid" });
       return;
     }
@@ -24,8 +35,12 @@ export const createPost = async (req: Request, res: Response) => {
     });
 
     res.status(201).json(newPost);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+    if (error.message === "User not found") {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
     res.status(500).json({ error: "Error creating post" });
   }
 };

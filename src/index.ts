@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 // Routes
 import userRoutes from './routes/user.routes';
+import postRoutes from './routes/post.routes';
 
 
 dotenv.config();
@@ -14,7 +15,8 @@ app.get('/', (req: Request, res: Response) => {
   res.send('¡Hola, Mundo desde Node.js y Prisma!');
 });
 
-app.use('/users', userRoutes);
+app.use('/author', userRoutes);
+app.use('/post', postRoutes);
 
 // Iniciar el servidor
 const HOST : string = process.env.HOST || 'http://localhost';
@@ -23,6 +25,3 @@ app.listen(PORT, () => {
   console.log(`Servidor corriendo en ${HOST}:${PORT}`);
 });
 
-function sumar(number1:number, number2:number): number {
-  return number1 + number2;
-}
