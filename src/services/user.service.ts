@@ -28,7 +28,7 @@ export const UserService = {
     });
   },
 
-  async updateUser(id: number, data: {name?: string, email?: string, icon?: string, biography?: string}){
+  async updateUser(id: number, data: {name?: string, email?: string, password?: string, icon?: string, biography?: string}){
     try {
       return await prisma.user.update({
         where: {id},

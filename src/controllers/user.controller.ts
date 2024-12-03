@@ -14,7 +14,7 @@ export const createUser = async (req: Request, res: Response) => {
     }
 
     const errorPassword = validatePassword(password);
-    if (errorPassword.status !== 200) {
+    if (errorPassword) {
       res.status(errorPassword.status).json({ message: errorPassword.message });
       return;
     }
@@ -76,13 +76,13 @@ export const updateUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const userUpdate = await UserService.updateUser(id, {
+    const updatedUser = await UserService.updateUser(id, {
       name,
       email,
       icon,
       biography,
     });
-    res.json(userUpdate);
+    res.json(updatedUser);
   } catch (error: any) {
     if (error.code === "P2025") {
       res.status(404).json({ message: "Usuario no encontrado" });
@@ -94,12 +94,46 @@ export const updateUser = async (req: Request, res: Response) => {
 };
 
 export const updateUserIcon = async (req: Request, res: Response) => {
-  const icon = req.params.icon;
+  try {
+    const id = parseInt(req.params.id);
 
-  const errorIcon = validateIcon(icon);
-  if (errorIcon !== null) {
-    res.status(errorIcon.status).json({ message: errorIcon.message });
-    return;
+    const user = await validateUserId(id,res);
+    if (!user) return;
+
+    const {icon} = req.body;
+
+    const errorIcon = validateIcon(icon);
+    if (errorIcon) {
+      res.status(errorIcon.status).json({ message: errorIcon.message });
+      return;
+    }
+
+    const updatedUser = await UserService.updateUser(id, { icon });
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const updateUserPassword = async (req: Request, res: Response) => {
+  try {
+    const id = parseInt(req.params.id);
+
+    const user = await validateUserId(id, res);
+    if(!user) return;
+
+    const {password} = req.body;
+  
+    const errorPassword = validatePassword(password);
+    if (errorPassword) {
+      res.status(errorPassword.status).json({message : errorPassword.message});
+      return;
+    }
+
+    const updatedUser = await UserService.updateUser(id,{password});
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -169,10 +203,7 @@ function validateEmail(
   return null;
 }
 
-function validatePassword(password: string): {
-  status: number;
-  message: string;
-} {
+function validatePassword(password: string): { status: number; message: string } | null {
   if (!password || password.trim() == "") {
     return { status: 400, message: "La contraseña no puede estar vacia" };
   }
@@ -193,7 +224,7 @@ function validatePassword(password: string): {
         "La contraseña debe tener una letra mayúscula, una minúscula y un número",
     };
   }
-  return { status: 200, message: "ok" };
+  return null;
 }
 
 function validateIcon(
