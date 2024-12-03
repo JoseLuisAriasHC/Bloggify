@@ -6,4 +6,5 @@ const router = Router();
 router.post('/', createPost);
 
 
+
 export default router;

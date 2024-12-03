@@ -5,13 +5,7 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password, icon, biography } = req.body;
 
-    const validatedUserInput = validateUserInput(
-      name,
-      email,
-      password,
-      icon,
-      biography
-    );
+    const validatedUserInput = validateUserInput(name, email, icon, biography);
     if (validatedUserInput.status !== 200) {
       res
         .status(validatedUserInput.status)
@@ -19,9 +13,15 @@ export const createUser = async (req: Request, res: Response) => {
       return;
     }
 
+    const errorPassword = validatePassword(password);
+    if (errorPassword.status !== 200) {
+      res.status(errorPassword.status).json({ message: errorPassword.message });
+      return;
+    }
+
     const existingUser = await UserService.getUserByEmail(email);
     if (existingUser) {
-      res.status(409).json({ message: "Email already in use" });
+      res.status(409).json({ message: "El correo electrónico esta en uso" });
       return;
     }
 
@@ -43,45 +43,17 @@ export const createUser = async (req: Request, res: Response) => {
   }
 };
 
-function validateUserInput(
-  name: string,
-  email: string,
-  password: string,
-  icon: string,
-  biography: string
-): { status: number; message: string } {
-  let validationError = validateUserName(name);
-  if (validationError) return validationError;
-
-  validationError = validateEmail(email);
-  if (validationError) return validationError;
-
-  validationError = validatePassword(password);
-  if (validationError) return validationError;
-
-  validationError = validateIcon(icon);
-  if (validationError) return validationError;
-
-  validationError = validateBiography(biography);
-  if (validationError) return validationError;
-
-  return { status: 200, message: "ok" };
-}
-
 export const deleteUser = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid user ID" });
-      return;
-    }
+    const user = await validateUserId(id, res);
+    if (!user) return;
 
     await UserService.deleteUser(id);
-    res.status(200).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "Usuario elimando con exito" });
   } catch (error: any) {
     if (error.code === "P2025") {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "Usuario no encontrado" });
     } else {
       console.error(error);
       res.status(500).json({ message: "Internal Server Error" });
@@ -92,16 +64,15 @@ export const deleteUser = async (req: Request, res: Response) => {
 export const updateUser = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid user ID" });
-      return;
-    }
+    const user = await validateUserId(id, res);
+    if (!user) return;
 
     const { name, email, icon, biography } = req.body;
-    if (!name && !email && !icon && !biography) {
-      res.status(400).json({
-        message: "At least one field (name, email, icon) is required to update",
-      });
+    const validatedUserInput = validateUserInput(name, email, icon, biography);
+    if (validatedUserInput.status !== 200) {
+      res
+        .status(validatedUserInput.status)
+        .json({ message: validatedUserInput.message });
       return;
     }
 
@@ -114,7 +85,7 @@ export const updateUser = async (req: Request, res: Response) => {
     res.json(userUpdate);
   } catch (error: any) {
     if (error.code === "P2025") {
-      res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "Usuario no encontrado" });
     } else {
       console.error(error);
       res.status(500).json({ message: "Internal Server Error" });
@@ -122,32 +93,48 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
+export const updateUserIcon = async (req: Request, res: Response) => {
+  const icon = req.params.icon;
+
+  const errorIcon = validateIcon(icon);
+  if (errorIcon !== null) {
+    res.status(errorIcon.status).json({ message: errorIcon.message });
+    return;
+  }
+};
+
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    // verificar si hay id
-    if (!req.params.id) {
-      res.status(400).json({ message: "User ID is required" });
-      return;
-    }
     const id = parseInt(req.params.id);
-    // verificar que el id es Number
-    if (isNaN(id)) {
-      res.status(400).json({ message: "Invalid user ID" });
-      return;
-    }
-
-    const user = await UserService.getUserById(id);
-    // verificar que hay un usuario con ese ID
-    if (!user) {
-      res.status(404).json({ message: "User not found" });
-      return;
-    }
+    const user = await validateUserId(id, res);
+    if (!user) return;
     res.json(user);
   } catch (error) {
     console.error("Error al obtener usuario:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+function validateUserInput(
+  name: string,
+  email: string,
+  icon: string,
+  biography: string
+): { status: number; message: string } {
+  let validationError = validateUserName(name);
+  if (validationError) return validationError;
+
+  validationError = validateEmail(email);
+  if (validationError) return validationError;
+
+  validationError = validateIcon(icon);
+  if (validationError) return validationError;
+
+  validationError = validateBiography(biography);
+  if (validationError) return validationError;
+
+  return { status: 200, message: "ok" };
+}
 
 function validateUserName(
   name: string
@@ -182,9 +169,10 @@ function validateEmail(
   return null;
 }
 
-function validatePassword(
-  password: string
-): { status: number; message: string } | null {
+function validatePassword(password: string): {
+  status: number;
+  message: string;
+} {
   if (!password || password.trim() == "") {
     return { status: 400, message: "La contraseña no puede estar vacia" };
   }
@@ -205,7 +193,7 @@ function validatePassword(
         "La contraseña debe tener una letra mayúscula, una minúscula y un número",
     };
   }
-  return null;
+  return { status: 200, message: "ok" };
 }
 
 function validateIcon(
@@ -215,14 +203,16 @@ function validateIcon(
     return { status: 400, message: "El icono no puede estar vacío" };
   }
   if (
-    !/^https?:\/\/(?:[\w-]+\.)+[a-z]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i.test(icon)
+    !/^https?:\/\/(?:[\w-]+\.)+[a-z]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i.test(
+      icon
+    )
   ) {
     return {
       status: 400,
       message: "El icono debe ser una URL válida",
     };
   }
-  
+
   return null;
 }
 
@@ -240,3 +230,18 @@ function validateBiography(
   }
   return null;
 }
+
+const validateUserId = async (id: number, res: Response) => {
+  if (isNaN(id) || id <= 0) {
+    res.status(400).json({ message: "Id de usuario inválido" });
+    return;
+  }
+
+  const user = await UserService.getUserById(id);
+  if (!user) {
+    res.status(404).json({ message: "Usuario no encontrado" });
+    return;
+  }
+
+  return user;
+};
