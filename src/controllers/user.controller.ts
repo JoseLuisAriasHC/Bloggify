@@ -182,7 +182,7 @@ function validateUserName(
       message: "El nombre debe tener entre 3 a 50 caracteres",
     };
   }
-  if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
+  if (!/^[a-zA-Z0-9\sáéíóúÁÉÍÓÚñÑüÜ]+$/.test(name)) {
     return {
       status: 400,
       message: "El nomber solo puede tener letras, numeros y espacios",

@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hashPassword } from "../utils/password";
 
 const prisma = new PrismaClient();
 
@@ -9,10 +10,14 @@ export const UserService = {
     });
   },
 
-  async createUser(data: {name: string, email: string, password: string, icon: string, biography: string }) {
+  async createUser(userData: {name: string, email: string, password: string, icon: string, biography: string }) {
     try {
+      const hashedPassword = await hashPassword(userData.password);
       return await prisma.user.create({
-        data,
+        data: {
+          ...userData,
+          password: hashedPassword,
+        },
       });
     } catch (error: any) {
       if (error.code === "P2002" && error.meta.target.includes("email")) {
