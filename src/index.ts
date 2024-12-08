@@ -1,11 +1,10 @@
 import express, { Request, Response } from 'express';
-import dotenv from 'dotenv';
+import config from './config';
 // Routes
 import userRoutes from './routes/user.routes';
 import postRoutes from './routes/post.routes';
 
 
-dotenv.config();
 
 const app = express();
 
@@ -19,9 +18,8 @@ app.use('/author', userRoutes);
 app.use('/post', postRoutes);
 
 // Iniciar el servidor
-const HOST : string = process.env.HOST || 'http://localhost';
-const PORT: number = parseInt(process.env.PORT || '3000');
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en ${HOST}:${PORT}`);
-});
+const { host, port } = config;
 
+app.listen(port, () => {
+  console.log(`Servidor corriendo en ${host}:${port}`);
+});
