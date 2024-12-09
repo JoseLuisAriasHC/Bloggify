@@ -3,7 +3,7 @@ import config from './config';
 // Routes
 import userRoutes from './routes/user.routes';
 import postRoutes from './routes/post.routes';
-
+import authRoutes from './routes/auth.routes';
 
 
 const app = express();
@@ -16,6 +16,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/author', userRoutes);
 app.use('/post', postRoutes);
+app.use('/auth', authRoutes);
 
 // Iniciar el servidor
 const { host, port } = config;

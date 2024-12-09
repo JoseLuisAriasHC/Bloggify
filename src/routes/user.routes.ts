@@ -12,12 +12,11 @@ const router = Router();
 
 router.post("/", createUser);
 
-router.get("/", getUserById);
 router.get("/:id", getUserById);
 
 router.put("/:id", updateUser);
-router.put("/:id/icon", updateUserIcon);
-router.put("/:id/password", updateUserPassword);
+router.patch("/:id/icon", updateUserIcon);
+router.patch("/:id/password", updateUserPassword);
 
 router.delete("/:id", deleteUser);
 
