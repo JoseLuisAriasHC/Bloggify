@@ -13,7 +13,6 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
     try {
         const decoded  = Jwt.verify(token, config.jwtSecret!);
-        req.cookies = decoded;
         res.locals.user = decoded;
         next();
     } catch (error) {

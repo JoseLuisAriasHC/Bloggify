@@ -14,11 +14,10 @@ app.get('/', (req: Request, res: Response) => {
   res.send('¡Hola, Mundo desde Node.js y Prisma!');
 });
 
-app.use('/author', userRoutes);
+app.use('/user', userRoutes);
 app.use('/post', postRoutes);
 app.use('/auth', authRoutes);
 
-// Iniciar el servidor
 const { host, port } = config;
 
 app.listen(port, () => {
