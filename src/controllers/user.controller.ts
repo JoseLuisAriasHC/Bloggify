@@ -49,6 +49,8 @@ export const deleteUser = async (req: Request, res: Response) => {
     const user = await validateUserId(id, res);
     if (!user) return;
 
+    if (!verifyUserOwnership(req, res)) return;
+
     await UserService.deleteUser(id);
     res.status(200).json({ message: "Usuario elimando con exito" });
   } catch (error: any) {
@@ -66,6 +68,8 @@ export const updateUser = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
     const user = await validateUserId(id, res);
     if (!user) return;
+
+    if (!verifyUserOwnership(req, res)) return;
 
     const { name, email, icon, biography } = req.body;
     const validatedUserInput = validateUserInput(name, email, icon, biography);
@@ -97,10 +101,12 @@ export const updateUserIcon = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
 
-    const user = await validateUserId(id,res);
+    const user = await validateUserId(id, res);
     if (!user) return;
 
-    const {icon} = req.body;
+    if (!verifyUserOwnership(req, res)) return;
+
+    const { icon } = req.body;
 
     const errorIcon = validateIcon(icon);
     if (errorIcon) {
@@ -120,17 +126,19 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     const id = parseInt(req.params.id);
 
     const user = await validateUserId(id, res);
-    if(!user) return;
+    if (!user) return;
 
-    const {password} = req.body;
-  
+    if (!verifyUserOwnership(req, res)) return;
+
+    const { password } = req.body;
+
     const errorPassword = validatePassword(password);
     if (errorPassword) {
-      res.status(errorPassword.status).json({message : errorPassword.message});
+      res.status(errorPassword.status).json({ message: errorPassword.message });
       return;
     }
 
-    const updatedUser = await UserService.updateUser(id,{password});
+    const updatedUser = await UserService.updateUser(id, { password });
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -203,7 +211,9 @@ function validateEmail(
   return null;
 }
 
-function validatePassword(password: string): { status: number; message: string } | null {
+function validatePassword(
+  password: string
+): { status: number; message: string } | null {
   if (!password || password.trim() == "") {
     return { status: 400, message: "La contraseña no puede estar vacia" };
   }
@@ -275,4 +285,19 @@ const validateUserId = async (id: number, res: Response) => {
   }
 
   return user;
+};
+
+const verifyUserOwnership = (req: Request, res: Response): boolean => {
+  const userFromToken = res.locals.user;
+  const userIdFromToken = userFromToken.id;
+  const userIdFromParams = parseInt(req.params.id);
+
+  if (userIdFromToken !== userIdFromParams) {
+    res
+      .status(403)
+      .json({ message: "No tienes permiso para acceder a este recurso" });
+    return false;
+  }
+
+  return true;
 };

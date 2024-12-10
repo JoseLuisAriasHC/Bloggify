@@ -7,6 +7,7 @@ import {
   updateUserIcon,
   updateUserPassword,
 } from "../controllers/user.controller";
+import { authenticateToken } from "../middlewares/middlewares";
 
 const router = Router();
 
@@ -14,10 +15,10 @@ router.post("/", createUser);
 
 router.get("/:id", getUserById);
 
-router.put("/:id", updateUser);
-router.patch("/:id/icon", updateUserIcon);
-router.patch("/:id/password", updateUserPassword);
+router.put("/:id", authenticateToken, updateUser);
+router.patch("/:id/icon", authenticateToken, updateUserIcon);
+router.patch("/:id/password", authenticateToken, updateUserPassword);
 
-router.delete("/:id", deleteUser);
+router.delete("/:id", authenticateToken, deleteUser);
 
 export default router;
