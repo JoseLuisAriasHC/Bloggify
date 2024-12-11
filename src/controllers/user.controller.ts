@@ -163,17 +163,17 @@ function validateUserInput(
   icon: string,
   biography: string
 ): { status: number; message: string } {
-  let validationError = validateUserName(name);
-  if (validationError) return validationError;
+  let errorExists = validateUserName(name);
+  if (errorExists) return errorExists;
 
-  validationError = validateEmail(email);
-  if (validationError) return validationError;
+  errorExists = validateEmail(email);
+  if (errorExists) return errorExists;
 
-  validationError = validateIcon(icon);
-  if (validationError) return validationError;
+  errorExists = validateIcon(icon);
+  if (errorExists) return errorExists;
 
-  validationError = validateBiography(biography);
-  if (validationError) return validationError;
+  errorExists = validateBiography(biography);
+  if (errorExists) return errorExists;
 
   return { status: 200, message: "ok" };
 }
@@ -244,7 +244,7 @@ function validateIcon(
     return { status: 400, message: "El icono no puede estar vacío" };
   }
   if (
-    !/^https?:\/\/(?:[\w-]+\.)+[a-z]{2,}(\/[\w\-._~:/?#[\]@!$&'()*+,;=]*)?$/i.test(
+    !/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(
       icon
     )
   ) {
