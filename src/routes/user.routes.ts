@@ -15,10 +15,10 @@ router.post("/", createUser);
 
 router.get("/:id", getUserById);
 
-router.put("/:id", authenticateToken, updateUser);
-router.patch("/:id/settings/icon", authenticateToken, updateUserIcon);
-router.patch("/:id/settings/password", authenticateToken, updateUserPassword);
+router.put("/", authenticateToken, updateUser);
+router.patch("/settings/icon", authenticateToken, updateUserIcon);
+router.patch("/settings/password", authenticateToken, updateUserPassword);
 
-router.delete("/:id", authenticateToken, deleteUser);
+router.delete("/", authenticateToken, deleteUser);
 
 export default router;

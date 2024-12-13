@@ -41,7 +41,7 @@ export const UserService = {
       });
     } catch (error: any) {
       if (error.code === "P2002" && error.meta.target.includes("email")) {
-        throw new Error("Correo electrónico en uso");
+        throw new Error("E-mail is already use");
       }
       throw error;
     }

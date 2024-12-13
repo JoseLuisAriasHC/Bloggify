@@ -45,13 +45,9 @@ export const createUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    const user = await validateUserId(id, res);
-    if (!user) return;
+    const user = res.locals.user;
 
-    if (!verifyUserOwnership(req, res)) return;
-
-    await UserService.deleteUser(id);
+    await UserService.deleteUser(user.id);
     res.status(200).json({ message: "Usuario elimando con exito" });
   } catch (error: any) {
     if (error.code === "P2025") {
@@ -65,13 +61,9 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-    const user = await validateUserId(id, res);
-    if (!user) return;
-
-    if (!verifyUserOwnership(req, res)) return;
-
+    const user = res.locals.user;
     const { name, email, icon, biography } = req.body;
+
     const validatedUserInput = validateUserInput(name, email, icon, biography);
     if (validatedUserInput.status !== 200) {
       res
@@ -80,7 +72,7 @@ export const updateUser = async (req: Request, res: Response) => {
       return;
     }
 
-    const updatedUser = await UserService.updateUser(id, {
+    const updatedUser = await UserService.updateUser(user.id, {
       name,
       email,
       icon,
@@ -90,6 +82,8 @@ export const updateUser = async (req: Request, res: Response) => {
   } catch (error: any) {
     if (error.code === "P2025") {
       res.status(404).json({ message: "Usuario no encontrado" });
+    } else if (error.message === "E-mail is already use") {
+      res.status(404).json({ error: "Correo electrónico en uso" });
     } else {
       console.error(error);
       res.status(500).json({ message: "Internal Server Error" });
@@ -99,13 +93,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const updateUserIcon = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-
-    const user = await validateUserId(id, res);
-    if (!user) return;
-
-    if (!verifyUserOwnership(req, res)) return;
-
+    const user = res.locals.user;
     const { icon } = req.body;
 
     const errorIcon = validateIcon(icon);
@@ -114,7 +102,7 @@ export const updateUserIcon = async (req: Request, res: Response) => {
       return;
     }
 
-    const updatedUser = await UserService.updateUser(id, { icon });
+    const updatedUser = await UserService.updateUser(user.id, { icon });
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -123,13 +111,7 @@ export const updateUserIcon = async (req: Request, res: Response) => {
 
 export const updateUserPassword = async (req: Request, res: Response) => {
   try {
-    const id = parseInt(req.params.id);
-
-    const user = await validateUserId(id, res);
-    if (!user) return;
-
-    if (!verifyUserOwnership(req, res)) return;
-
+    const user = res.locals.user;
     const { password } = req.body;
 
     const errorPassword = validatePassword(password);
@@ -138,7 +120,7 @@ export const updateUserPassword = async (req: Request, res: Response) => {
       return;
     }
 
-    const updatedUser = await UserService.updateUser(id, { password });
+    const updatedUser = await UserService.updateUser(user.id, { password });
     res.status(200).json(updatedUser);
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -243,11 +225,7 @@ function validateIcon(
   if (!icon || icon.trim() === "") {
     return { status: 400, message: "El icono no puede estar vacío" };
   }
-  if (
-    !/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(
-      icon
-    )
-  ) {
+  if (!/^(https?:\/\/)[^\s$.?#].[^\s]*$/.test(icon)) {
     return {
       status: 400,
       message: "El icono debe ser una URL válida",
@@ -285,19 +263,4 @@ const validateUserId = async (id: number, res: Response) => {
   }
 
   return user;
-};
-
-const verifyUserOwnership = (req: Request, res: Response): boolean => {
-  const userFromToken = res.locals.user;
-  const userIdFromToken = userFromToken.id;
-  const userIdFromParams = parseInt(req.params.id);
-
-  if (userIdFromToken !== userIdFromParams) {
-    res
-      .status(403)
-      .json({ message: "No tienes permiso para acceder a este recurso" });
-    return false;
-  }
-
-  return true;
 };

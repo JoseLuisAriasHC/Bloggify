@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { PostService } from "../services/post.service";
-import { UserService } from "../services/user.service";
 
 export const createPost = async (req: Request, res: Response) => {
   try {
-    const { title, content, summary, imageUrl, authorId } = req.body;
+    const user = res.locals.user;
+    const { title, content, summary, imageUrl } = req.body;
 
     const validatedPostInput = validatePostInput(title, content, summary, imageUrl);
     if (validatedPostInput.status != 200) {
@@ -12,15 +12,12 @@ export const createPost = async (req: Request, res: Response) => {
       return;
     }
 
-    const author = await validateAuthorId(authorId, res);
-    if (!author) return;
-
     const newPost = await PostService.createPost({
       title,
       content,
       summary,
       imageUrl,
-      authorId,
+      authorId: user.id,
     });
 
     res.status(201).json(newPost);
@@ -86,7 +83,7 @@ function validateSummary(summary: string): { status: number; message: string } |
   if (!summary || summary.trim() == "") {
     return {status: 400, message: "El resumen no puede estar vacío"}
   }
-  if (summary.length < 200 || summary.length > 600) {
+  if (summary.length < 100 || summary.length > 600) {
     return {status: 400, message: "El resumen tiene que tener entre 200 a 600 caracteres"}
   }
   return null;
@@ -101,18 +98,3 @@ function validateImageUrl(imageUrl: string): { status: number; message: string }
   }
   return null;
 }
-
-async function validateAuthorId (id: number, res: Response){
-  if (isNaN(id) || id <= 0) {
-    res.status(400).json({ message: "Id de autor inválido" });
-    return;
-  }
-
-  const user = await UserService.getUserById(id);
-  if (!user) {
-    res.status(404).json({ message: "Autor no encontrado" });
-    return;
-  }
-
-  return user;
-};
