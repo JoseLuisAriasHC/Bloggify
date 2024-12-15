@@ -50,12 +50,8 @@ export const deleteUser = async (req: Request, res: Response) => {
     await UserService.deleteUser(user.id);
     res.status(200).json({ message: "Usuario elimando con exito" });
   } catch (error: any) {
-    if (error.code === "P2025") {
-      res.status(404).json({ message: "Usuario no encontrado" });
-    } else {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -80,9 +76,7 @@ export const updateUser = async (req: Request, res: Response) => {
     });
     res.json(updatedUser);
   } catch (error: any) {
-    if (error.code === "P2025") {
-      res.status(404).json({ message: "Usuario no encontrado" });
-    } else if (error.message === "E-mail is already use") {
+    if (error.message === "E-mail is already use") {
       res.status(404).json({ error: "Correo electrónico en uso" });
     } else {
       console.error(error);
@@ -130,9 +124,19 @@ export const updateUserPassword = async (req: Request, res: Response) => {
 export const getUserById = async (req: Request, res: Response) => {
   try {
     const id = parseInt(req.params.id);
-    const user = await validateUserId(id, res);
-    if (!user) return;
-    res.json(user);
+
+    if (isNaN(id) || id <= 0) {
+      res.status(400).json({ message: "Id de usuario inválido" });
+      return;
+    }
+  
+    const user = await UserService.getUserById(id);
+    if (!user) {
+      res.status(404).json({ message: "Usuario no encontrado" });
+      return;
+    }
+
+    res.status(200).json(user);
   } catch (error) {
     console.error("Error al obtener usuario:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -249,18 +253,3 @@ function validateBiography(
   }
   return null;
 }
-
-const validateUserId = async (id: number, res: Response) => {
-  if (isNaN(id) || id <= 0) {
-    res.status(400).json({ message: "Id de usuario inválido" });
-    return;
-  }
-
-  const user = await UserService.getUserById(id);
-  if (!user) {
-    res.status(404).json({ message: "Usuario no encontrado" });
-    return;
-  }
-
-  return user;
-};

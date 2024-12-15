@@ -11,7 +11,7 @@ export const PostService = {
     imageUrl: string;
     authorId: number;
   }) {
-    const slug = await generateSlug(title);
+    const slug = await generateSlug(undefined, title);
     const post = await prisma.post.create({
       data: {
         ...data,
@@ -31,9 +31,13 @@ export const PostService = {
       imageUrl: string;
     }
   ) {
+    const slug = await generateSlug(id, data.title);
     const newPost = await prisma.post.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        slug: slug,
+      },
     });
 
     return newPost;
@@ -42,10 +46,16 @@ export const PostService = {
   async deletePost(id: number) {
     return await prisma.post.delete({ where: { id } });
   },
+
+  async getPost(id: number) {
+    return await prisma.post.findUnique({
+      where: { id },
+    });
+  },
 };
 
 // Verificar si el slug base ya existe y generar un slug unico si es necesario
-async function generateSlug(title: string): Promise<string> {
+async function generateSlug(id: number | undefined, title: string): Promise<string> {
   const slugBase = title
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
@@ -54,9 +64,20 @@ async function generateSlug(title: string): Promise<string> {
   let uniqueSlug = slugBase;
   let count = 1;
 
-  while (await prisma.post.findUnique({ where: { slug: uniqueSlug } })) {
+  while (true) {
+    const existingPost = await prisma.post.findUnique({ where: { slug: uniqueSlug } });
+
+    if (!existingPost) {
+      break;
+    }
+
+    if (id && existingPost.id === id) {
+      return uniqueSlug;
+    }
+
     uniqueSlug = `${slugBase}-${count}`;
     count++;
   }
+
   return uniqueSlug;
 }
