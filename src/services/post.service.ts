@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { title } from "process";
 
 const prisma = new PrismaClient();
 
@@ -11,7 +10,7 @@ export const PostService = {
     imageUrl: string;
     authorId: number;
   }) {
-    const slug = await generateSlug(undefined, title);
+    const slug = await generateSlug(undefined, data.title);
     const post = await prisma.post.create({
       data: {
         ...data,
@@ -50,6 +49,9 @@ export const PostService = {
   async getPost(id: number) {
     return await prisma.post.findUnique({
       where: { id },
+      include: {
+        comments: true,
+      },
     });
   },
 };

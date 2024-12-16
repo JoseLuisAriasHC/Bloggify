@@ -43,7 +43,7 @@ export const updatePost = async (req: Request, res: Response) => {
     if (user.id !== authorId) {
       res
         .status(403)
-        .json({ message: "No tienes permiso para modificar este recurso" });
+        .json({ message: "No tienes permiso para modificar el post" });
       return;
     }
 

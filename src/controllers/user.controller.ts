@@ -74,7 +74,7 @@ export const updateUser = async (req: Request, res: Response) => {
       icon,
       biography,
     });
-    res.json(updatedUser);
+    res.status(200).json(updatedUser);
   } catch (error: any) {
     if (error.message === "E-mail is already use") {
       res.status(404).json({ error: "Correo electrónico en uso" });
