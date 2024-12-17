@@ -4,6 +4,8 @@ import config from './config';
 import userRoutes from './routes/user.routes';
 import postRoutes from './routes/post.routes';
 import authRoutes from './routes/auth.routes';
+import commentRoutes from './routes/comment.routes'
+import favoriteRoutes from './routes/favorite.routes';
 
 
 const app = express();
@@ -17,6 +19,8 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/user', userRoutes);
 app.use('/post', postRoutes);
 app.use('/auth', authRoutes);
+app.use('/comment', commentRoutes);
+app.use('/favorite', favoriteRoutes);
 
 const { host, port } = config;
 

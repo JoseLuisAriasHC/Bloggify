@@ -4,7 +4,9 @@ import { authenticateToken } from "../middlewares/middlewares";
 
 const router = Router();
 
-router.post("/", authenticateToken, createComment);
-router.patch("/:id", authenticateToken, updateComment);
+router.use(authenticateToken);
+
+router.post("/", createComment);
+router.patch("/:id", updateComment);
 
 export default router;

@@ -39,7 +39,8 @@ export const createComment = async (req: Request, res: Response) => {
 export const updateComment = async (req: Request, res: Response) => {
   try {
     const user = res.locals.user;
-    const { commentId, content } = req.body;
+    const commentId = parseInt(req.params.id);
+    const { content } = req.body;
 
     const contentValidation = validateContent(content);
     if (contentValidation.status !== 200) {
@@ -58,8 +59,10 @@ export const updateComment = async (req: Request, res: Response) => {
     }
 
     if (commentIdValidation.comment?.authorId !== user.id) {
-        res.status(403).json({message: "No tienes permiso para modificar el comentario"});
-        return;
+      res
+        .status(403)
+        .json({ message: "No tienes permiso para modificar el comentario" });
+      return;
     }
 
     const newComment = await CommentService.updateComment(commentId, {
@@ -106,5 +109,6 @@ async function validateCommentId(commentId: number) {
   if (!comment) {
     return { status: 404, message: "Comentario no encontrado" };
   }
+
   return { status: 200, message: "ok", comment: comment };
 }
