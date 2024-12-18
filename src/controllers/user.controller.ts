@@ -37,8 +37,8 @@ export const createUser = async (req: Request, res: Response) => {
     if (error.code === "P2025") {
       res.status(404).json({ message: "User not found" });
     } else {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error al crear usuario", error);
+      res.status(500).json({ message: "Error interno del servidor" });
     }
   }
 };
@@ -50,8 +50,8 @@ export const deleteUser = async (req: Request, res: Response) => {
     await UserService.deleteUser(user.id);
     res.status(200).json({ message: "Usuario elimando con exito" });
   } catch (error: any) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error al borrar usuario", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
@@ -79,8 +79,8 @@ export const updateUser = async (req: Request, res: Response) => {
     if (error.message === "E-mail is already use") {
       res.status(404).json({ error: "Correo electrónico en uso" });
     } else {
-      console.error(error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error("Error al actualizar usuario", error);
+      res.status(500).json({ message: "Error interno del servidor" });
     }
   }
 };
@@ -99,7 +99,8 @@ export const updateUserIcon = async (req: Request, res: Response) => {
     const updatedUser = await UserService.updateUser(user.id, { icon });
     res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error al cambiar icono", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
@@ -117,7 +118,8 @@ export const updateUserPassword = async (req: Request, res: Response) => {
     const updatedUser = await UserService.updateUser(user.id, { password });
     res.status(200).json(updatedUser);
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
+    console.error("Error al actualizar contraseña", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
@@ -129,7 +131,7 @@ export const getUserById = async (req: Request, res: Response) => {
       res.status(400).json({ message: "Id de usuario inválido" });
       return;
     }
-  
+
     const user = await UserService.getUserById(id);
     if (!user) {
       res.status(404).json({ message: "Usuario no encontrado" });
@@ -139,7 +141,7 @@ export const getUserById = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error) {
     console.error("Error al obtener usuario:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 

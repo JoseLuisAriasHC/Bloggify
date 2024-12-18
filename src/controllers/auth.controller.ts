@@ -48,7 +48,10 @@ export const refreshToken = async (req: Request, res: Response) => {
   try {
     const userFromToken = res.locals.user;
 
-    const newToken = generateToken({id: userFromToken.id, email: userFromToken.email});
+    const newToken = generateToken({
+      id: userFromToken.id,
+      email: userFromToken.email,
+    });
 
     res.status(200).json({
       message: "Token renovado exitosamente",
@@ -56,6 +59,6 @@ export const refreshToken = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error("Error al renovar token", error);
-    res.status(500).json({ message: "Erro interno del servidor"});
+    res.status(500).json({ message: "Erro interno del servidor" });
   }
 };

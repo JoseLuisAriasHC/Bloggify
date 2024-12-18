@@ -46,14 +46,29 @@ export const PostService = {
     return await prisma.post.delete({ where: { id } });
   },
 
-  async getPost(id: number) {
+  async getPostById(id: number) {
     return await prisma.post.findUnique({
       where: { id },
       include: {
         comments: true,
+        tags: true,
       },
     });
   },
+
+  async getPostsByTag(tagId: number){
+    const post = await prisma.post.findMany({
+        where: {
+            tags: {
+                some: { tagId },
+            },
+        },
+        include: {
+            tags: true,
+        }
+    });
+    return post;
+  }
 };
 
 // Verificar si el slug base ya existe y generar un slug unico si es necesario

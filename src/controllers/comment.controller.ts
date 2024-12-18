@@ -93,7 +93,7 @@ async function validatePostId(postId: number) {
     return { status: 400, message: "Id de post inválido" };
   }
 
-  const post = await PostService.getPost(postId);
+  const post = await PostService.getPostById(postId);
   if (!post) {
     return { status: 404, message: "Post no encontrado" };
   }

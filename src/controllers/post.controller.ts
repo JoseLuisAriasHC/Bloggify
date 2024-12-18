@@ -30,7 +30,7 @@ export const createPost = async (req: Request, res: Response) => {
     res.status(201).json(newPost);
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
@@ -73,7 +73,7 @@ export const updatePost = async (req: Request, res: Response) => {
     res.status(200).json(newPost);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: "Error interno del servidor" });
   }
 };
 
@@ -96,6 +96,7 @@ export const deletePost = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Post elimando con exito" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
@@ -195,7 +196,7 @@ async function validatePostId(id: number, res: Response) {
     return;
   }
 
-  const post = await PostService.getPost(id);
+  const post = await PostService.getPostById(id);
   if (!post) {
     res.status(404).json({ message: "Post no encontrado" });
     return;

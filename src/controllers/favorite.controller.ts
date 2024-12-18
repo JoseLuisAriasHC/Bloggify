@@ -16,7 +16,7 @@ export const createFavorite = async (req: Request, res: Response) => {
     });
     res.status(201).json(newFavorite);
   } catch (error) {
-    console.error("Error al actualizar comentario", error);
+    console.error("Error al crear Favorite", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
@@ -39,7 +39,7 @@ export const deleteFavorite = async (req: Request, res: Response) => {
     await FavoriteService.deleteFavorite(favoriteId);
     res.status(200).json({ message: "Post eliminado de favoritos con exito" });
   } catch (error) {
-    console.error("Error al actualizar comentario", error);
+    console.error("Error al borrar favorito", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
@@ -65,7 +65,7 @@ async function validatePostId(id: number, res: Response) {
     return;
   }
 
-  const post = await PostService.getPost(id);
+  const post = await PostService.getPostById(id);
   if (!post) {
     res.status(404).json({ message: "Post no encontrado" });
     return;
